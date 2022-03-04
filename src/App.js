@@ -1,9 +1,11 @@
 import { useState } from "react";
-import contractAbi from "./contracts/Counter.json"
+import contractAbi from "./contracts/TwintopiaMembershipNFT.json"
 import {ethers} from "ethers";
+import Button from '@mui/material/Button';
+import Video from './components/Video';
+import Grid from '@mui/material/Grid';
 
-//contract address
-const contractAddress = "0x4800Cf28C598BA85a3465a3e49AE94e94503A4fC";
+const contractAddress = "0xc79F055C76632bA44ded862696353D6fb0F48156";
 const abi = contractAbi.abi;
 const provider = new ethers.providers.Web3Provider(window.ethereum);
 const singer = provider.getSigner();
@@ -12,11 +14,15 @@ const contract = new ethers.Contract(contractAddress, abi, singer);
 function App() {
 
   const [walletAddress, setWalletAddress] = useState("No Wallet Connection!");
-  const [count, setCount] = useState("no count");
+  const [twtrId, setTwtrId] = useState("");
+  const twtrIdChange = (e) => {
+    setTwtrId(() => e.target.value);
+  }
 
-  contract.on("UpdatedCount", (from, to, amount, event) => {
-    setCount(parseInt(from, 10))
-  });
+  const [inviteAddress, seetInviteAddress] = useState("");
+  const inviteAddressChange = (e) => {
+    seetInviteAddress(() => e.target.value);
+  }
 
   const connectWalletHandler = async () => {
     if (!window.ethereum) {
@@ -36,42 +42,73 @@ function App() {
     }
   }
 
-  const inc = async () => {
+  const mintTWINMBRSHP = async () => {
     try {
-      await contract.inc(walletAddress);
+      let _twtrId = twtrId;
+      await contract.mintTWINMBRSHP(_twtrId);
+      window.location.reload();
     } catch(err) {
       console.log(err);
     }
   }
 
-  const dec = async () => {
+  const invite = async () => {
     try {
-      await contract.dec(walletAddress);
+      let _inviteAddress = inviteAddress;
+      await contract.inviteAddress(_inviteAddress);
+      window.location.reload();
     } catch(err) {
       console.log(err);
     }
-  }
-
-  const get = async () => {
-    const c = await contract.get();
-    setCount(parseInt(c, 10));
-    console.log(c);
   }
 
   return (
     <div>
-      <div>
-        <h1>Counter Dapp</h1>
-        <p>ContractAddress: { contractAddress }</p>
-        <p>Wallet Address: { walletAddress }</p>
-        <p>count: { count }</p>
-        <p>incrementを押すとcountが１増えます。decrementを押すとcountが１減ります。countはコントラクト全体で共有されていて、getで現在の値がわかります。</p>
-        <p>Ropsten Test Network に設定してください。それ以外は反応しないです。</p>
-        <button onClick={connectWalletHandler}>Connect Wallet</button>
-        <button onClick={inc}>increment</button>
-        <button onClick={dec}>decrement</button>
-        <button onClick={get}>get</button>
+      <div id="intro">
+        <h1>Twintopia Membership NFT</h1>
+        <h3>You Got a Invitation. Let's Mint your Membership and <a href="https://t.co/4Qs5pWKol2">Join Discord.</a></h3>   
+        <a id="link-text" href="https://synschismo.com">👉&ensp;synschismo Inc. website</a>
       </div>
+      <Grid
+        container
+        spacing={0}
+        direction="column"
+        alignItems="center"
+        justifyContent="center"
+        padding-top="0"
+      >
+        <Grid item xs={3}>
+          <div id="inputBox">
+            <h2>Mint Membership</h2>
+            <br></br>
+            <div id="contentbox">
+              <p id="text-border">① Connect Your Wallet</p>
+              <p>{walletAddress}</p>
+              <Button id="button" variant="contained" onClick={connectWalletHandler} style={{ color: "#ffffff", backgroundColor: "#444" }}>Connect Wallet</Button>
+            </div>
+            <div id="contentbox">
+              <p id="text-border">② Enter Twitter ID</p>
+              <input id="text-fill" value={twtrId} onChange={twtrIdChange} type="text" />
+            </div>
+            <div id="contentbox">
+              <p id="text-border">③ MINT your Membership</p>
+              <Button variant="contained" onClick={ () => mintTWINMBRSHP(twtrId) } style={{ color: "#ffffff", backgroundColor: "#444" }}>mint Membership</Button>
+              <p>Check your Membership at 👉&ensp;<a href="https://testnets.opensea.io/collection/twintopia-membership-rn9ndtpw8l" rel="noreferrer noopener">Opensea</a></p>
+            </div>
+            <div id="contentbox">
+              <p id="text-border">④ Invite Friend's Address</p>
+              <input id="text-fill" value={inviteAddress} onChange={inviteAddressChange} type="text" />
+              <Button variant="contained" onClick={ () => invite(inviteAddress) } style={{ 'marginTop':"15px", color: "#ffffff", backgroundColor: "#444" }}>mint Membership</Button>
+            </div>
+          </div>
+          <div id="imgBox">
+            <Video id="video"/>
+            <div id="metadataBox">
+                <p></p>
+            </div>
+          </div>
+        </Grid>
+      </Grid> 
     </div>
   )
 }
